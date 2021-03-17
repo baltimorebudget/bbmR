@@ -16,7 +16,7 @@ create_analyst_dirs <- function(path, additional_folders = NULL) {
     path <- getwd()
   }
 
-  analysts <- c(strsplit(Sys.getenv("BBMR_ANALYSTS"), "|", fixed = TRUE),
+  analysts <- c(unlist(strsplit(Sys.getenv("BBMR_ANALYSTS"), "|", fixed = TRUE)),
                 additional_folders)
 
   if (stringr::str_trunc(path, 1, side = "left", ellipsis = "") == "/") {

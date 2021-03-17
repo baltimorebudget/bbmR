@@ -1,7 +1,7 @@
 Package: bbmR
 Type: Package
 Title: Helper functions for the Baltimore City Budget office (BBMR)
-Version: 2021.03.03
+Version: 2021.03.16
 Authors@R: person("Lillian", "Nguyen", email = "lillian.nguyen@baltimorecity.gov", role = c("aut", "cre"))
 Maintainer: Lillian Nguyen <lillian.nguyen@baltimorecity.gov>
 Description: Functions that facilitate common data-related tasks for the Baltimore City Bureau of the Budget and Management Research
