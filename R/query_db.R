@@ -9,9 +9,9 @@
 #'
 #' @author Lillian Nguyen
 #'
-#' @import DBI
-#' @import dbplyr
-#' @import odbc
+#' @importFrom DBI dbConnect
+#' @importFrom dbplyr in_schema
+#' @importFrom odbc odbc
 #' @export
 
 
