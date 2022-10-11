@@ -51,13 +51,16 @@ export_excel <- function(
   excel <- switch(type,
                   "new" = openxlsx::createWorkbook(),
                   "existing" = openxlsx::loadWorkbook(file_name)) %T>%
+    openxlsx::modifyBaseFont(fontSize = 10) %T>%
     openxlsx::addWorksheet(
       tab_name, tabColour = tab_color,
       header = c(gsub('\\..*', '', file_name), "&[Tab]", as.character(Sys.Date())),
       footer = c(NA, "&[Page]", NA), visible = show_tab) %T>%
     openxlsx::writeDataTable(
       tab_name, df,
-      tableStyle = "TableStyleLight1", tableName = table_name) %T>%
+      tableStyle = "none", headerStyle =
+        createStyle(textDecoration = "bold", border = "bottom", borderStyle = "thin"),
+      tableName = table_name) %T>%
     openxlsx::setColWidths(tab_name, 1:ncol(df), widths = col_width) %T>%
     openxlsx::freezePane(tab_name, 1, firstRow = TRUE) %T>%
     openxlsx::pageSetup(tab_name, printTitleRows = 1) # repeat first row when printing

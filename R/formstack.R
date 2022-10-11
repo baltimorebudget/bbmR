@@ -96,19 +96,18 @@ extract_fs_submissions <- function(api, form_id, approved_only = FALSE) {
       map(extract2, "timestamp") %>%
       unlist()
 
-    list(
-      submissions = raw %>% # get only submission data; remove all payload data
-        map(extract2, "data") %>%
-        set_names(time),
-      approvals = raw %>%
-        map(extract2, "approval_status"))
-
+    return(
+      list(
+        submissions = raw %>% # get only submission data; remove all payload data
+          map(extract2, "data") %>%
+          set_names(time),
+        approvals = raw %>%
+          map(extract2, "approval_status")))
   })
 
-
-  submissions <- sapply(data, "[[", "submissions") %>%
-    # submissions are organized in lists by page;
-    # remove this list since we don't care what page each submission was on
+  # submissions are organized in lists by page;
+  # remove this list since we don't care what page each submission was on
+  submissions <- lapply(data, "[[", "submissions") %>%
     unlist(recursive = FALSE)
 
   approvals <- sapply(data, "[[", "approvals") %>%
