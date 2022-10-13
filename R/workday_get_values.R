@@ -11,9 +11,9 @@ workday_get_values <- function() {
   x_fund <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "Fund") %>%
     select(`FUND ID`, `Fund Name`, `Fund`) %>%
     rename(`BPFS Fund` = `Fund`) %>%
-    rename(`Workday Fund` = `FUND ID`) #%>%
-  # mutate(`BPFS Fund` = as.character(`BPFS Fund`),
-  #        `Workday Fund` = as.character(`Workday Fund`))
+    rename(`Workday Fund` = `FUND ID`) %>%
+  mutate(`BPFS Fund` = as.numeric(`BPFS Fund`),
+         `Workday Fund` = as.numeric(`Workday Fund`))
 
   x_spend_cat <- import("G:/Fiscal Years/SubObject_SpendCategory.xlsx")
   # x_spend_cat <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "Natural") %>%

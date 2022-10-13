@@ -15,7 +15,7 @@
 ##2. BPFS's ACCT_MAP_26_15 table to derive a compatible program id # for Workday's FDM Program-Activity,
 ##3. Workday's FDM cross walk file for Fund <- Fund, Cost Center <- Pgm-Activity, Grant/SP <- Detailed Fund
 ##4. William's custom OSO mapping file to get Spend Category
-##5. subactivity?
+##5. past appropriation files to fill gaps in xwalk values (FY21-23)
 
 ##26-digit: 4001(fund)-442200(detailed fund)-1110(program)-842200(activity)-601001(payroll natural)
 ##15-digit: 4001(fund)-111(program)-001(activity)-00(subactivity)-1(object)-01(subobject)
@@ -102,7 +102,7 @@ exp_lines_workday_xwalk <- function(exp_file, bpfs_table = "PLANNINGYEAR24") {
     mutate(`Program Activity` = extract_program_activity(col = DIGIT_ACCOUNT_26.x)) %>%
     left_join(workday_values$cc, by = c("Program Activity" = "Pgm-Activity")) %>%
     left_join(workday_values$grant, by = c("DetailedFund ID" = "Grant")) %>%
-    distinct
+    distinct()
 
   check <- df %>% filter(is.na(`CCA ID`))
 
@@ -138,32 +138,53 @@ exp_lines_workday_xwalk <- function(exp_file, bpfs_table = "PLANNINGYEAR24") {
 #'
 ##projection year actuals from BAPS system (not Workday!)
 ##cannot map to cost center without a subactivity!!!!
+##missing lots of cost centers
 exp_actuals_workday_xwalk <- function(actuals_file = "G:/Fiscal Years/Fiscal 2022/Projections Year/2. Monthly Expenditure Data/Month 12_June Projections/Expenditure 2022-06_Run7.xlsx") {
 
-  input <- import(actuals_file, which = "CurrentYearExpendituresActLevel")
+  input <- import(actuals_file, which = "CurrentYearExpendituresActLevel") %>%
+    filter(!is.na(`Program Name`))
 
-  ##read in FDM
-  workday_values <- workday_get_values()
+  #make a list of unique identifiers for each item in the input file
+  input_items <- as.list(input %>% unite(col = "Unique ID", c(`Agency ID`, `Program ID`, `Activity ID`, `Fund ID`,  `Object ID`, `Subobject ID`), sep = "-") %>%
+    select(`Unique ID`) %>%
+      distinct())
 
-  df <- left_join(input, workday_values$acct_26, by = c(
+  ##check values for duplication
+  start_exp <- sum(input$`BAPS YTD EXP`, na.rm = TRUE)
+
+  match_values <- make_master_join()
+
+
+  df <- left_join(input, match_values, by = c(
     "Program ID" = "PROGRAM_ID",
     "Activity ID" = "ACTIVITY_ID",
     "Object ID" = "OBJECT_ID",
     "Subobject ID" = "SUBOBJECT_ID",
-    "Fund ID" = "FUND_ID")) %>%
-    left_join(workday_values$fund, by = c("Fund ID" = "BPFS Fund")) %>%
-    left_join(workday_values$spend_cat, by = c("Object ID", "Subobject ID" = "BPFS SubObject ID")) %>%
-    ##create program-activity key to map to x_cc
-    mutate(`Program Activity` = extract_program_activity(col = DIGIT_ACCOUNT_26)) %>%
-    ##join on cost center
-    left_join(workday_values$cc, by = c("Program Activity" = "Pgm-Activity")) %>%
-    #remove duplicates created by joins
-    distinct()
+    "Fund ID" = "FUND_ID"),
+    #keep columns for later joins
+    keep = TRUE) %>%
+    #make unique ids before columns are removed via joins and keep columns for later joins
+    unite(col = "Unique ID", c(`Agency ID`, `Program ID`, `Activity ID.x`, `Fund ID`,  `Object ID`, `Subobject ID`), sep = "-", remove = FALSE) %>%
+    #filter out items not in original input
+    # mutate(`Keep` = case_when(`Unique ID` %in% input_items ~ "Yes",
+    #                           TRUE ~ "No"))
+    filter(is.element(`Unique ID`, unlist(input_items)))
 
   check <- df %>% filter(is.na(`CCA ID`))
 
+  check2 <- df %>%
+    select(`CC Name`, `Spend Category Name`, `BAPS YTD EXP`) %>%
+    group_by(`CC Name`, `Spend Category Name`) %>%
+    summarise(Total = sum(`BAPS YTD EXP`, na.rm =TRUE))
+
+  end_exp <- sum(check2$Total, na.rm = TRUE)
+  message <- if (start_exp == end_exp) {"Totals match."} else {
+    paste0("Totals do not match by $", start_exp - end_exp)}
+
+  message(message)
+
   message(dim(check)[1], " cost centers missing from dataset.")
-  message(paste0("$", sum(check$Total, na.rm = TRUE)), " unassigned to a cost center.")
+  message(paste0("$", sum(check$`BAPS YTD EXP`, na.rm = TRUE)), " unassigned to a cost center.")
 
   return(list(data = df, missing = check))
 }
