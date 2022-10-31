@@ -25,7 +25,7 @@
 revenue_workday_xwalk <- function(data = data$revenue, coa_file = "G:/Analyst Folders/Sara Brumfield/_ref/Chart_of_Accounts 2022-09-06.xlsx",
                      coa_sheet = "All Revenue Categories (Non-Gr)") {
   coa <- import(coa_file, which = coa_sheet) %>%
-  select("Short", "BBMR - Workday Description - Revenue Description - Revenue Category")
+  select("Mod'd Short", "BBMR - Workday Description - Revenue Description - Revenue Category")
 
   coa["BBMR - Workday Description - Revenue Description - Revenue Category"][coa["BBMR - Workday Description - Revenue Description - Revenue Category"]=="Identified Gaps in SI#"] <- NA
   coa <- coa %>% unique()
@@ -51,13 +51,13 @@ rev_projections_workday_xwalk <- function(fiscal_year = 2023) {
  data <- input %>%
    rename(`Revenue Category` = `BBMR RC #'s`,
           `Description` = `BBMR - Workday Description - Revenue Description - Revenue Category`) %>%
-   select(`Short`, `Revenue Category`, `Description`)
+   select(`Mod'd Short`, `Revenue Category`, `Description`)
 
  check <- input %>%
    rename(`Revenue Category` = `BBMR RC #'s`,
           `Description` = `BBMR - Workday Description - Revenue Description - Revenue Category`) %>%
-   select(`Short`, `Revenue Category`, `Description`, `Fiscal 2023 Budget`) %>%
-   group_by(`Short`, `Revenue Category`, `Description`) %>%
+   select(`Mod'd Short`, `Revenue Category`, `Description`, `Fiscal 2023 Budget`) %>%
+   group_by(`Mod'd Short`, `Revenue Category`, `Description`) %>%
    summarise(Total = sum(`Fiscal 2023 Budget`, na.rm =TRUE))
 
  end_revenue <- sum(check$Total, na.rm = TRUE)

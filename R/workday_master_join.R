@@ -24,7 +24,8 @@ make_master_join <- function() {
                                                                              "SUBOBJECT_ID" = "SubobjectID"), keep = TRUE) %>%
     distinct() %>%
     #consolidate values across columns from difference sources
-    mutate(`Activity ID` = case_when(is.na(`ActivityID`) ~ `ACTIVITY_ID`,
+    ##not working!!
+    mutate(`Activity ID` = case_when(TRUE ~ `ACTIVITY_ID`,
                                      is.na(ACTIVITY_ID) ~ `ActivityID`)) %>%
     left_join(workday_values$fund, by = c("FUND_ID" = "BPFS Fund"), keep = TRUE) %>%
     distinct() %>%
@@ -35,7 +36,7 @@ make_master_join <- function() {
     ##join on cost center
     left_join(workday_values$cc, by = c("Program Activity" = "Pgm-Activity"), keep = TRUE) %>%
     #remove duplicates created by joins
-    distinct() %>%
+    distinct()
 
 
 }

@@ -7,6 +7,36 @@
 #'
 #' @return A vector of strings
 #'
+#' @author Sara Brumfield
+#'
+#' @import magrittr
+#' @import dplyr
+#' @export
+
+rename_upper_to_title <- function(df){
+  new_col = list()
+  for (n in names(df)) {
+    n = str_to_title(n)
+
+    if (grepl("Id", n) | grepl("Si ", n) | grepl("Oso ", n)) {
+      n = str_replace(n, "Id", "ID")
+      n = str_replace(n, "Si ", "SI ")
+      n = str_replace(n, "Oso ", "OSO ")} else {
+        n=n}
+    new_col = append(new_col, n)
+  }
+  return(new_col)
+}
+
+#' Renames commonly inconsistent column names in BBMR data
+#'
+#' Standardizes column names to Title Case when recognized,
+#' and tolowercasewithout spaces when not recognized
+#'
+#' @param df dataframe with colnames to modify
+#'
+#' @return A vector of strings
+#'
 #' @author Lillian Nguyen
 #'
 #' @import magrittr
