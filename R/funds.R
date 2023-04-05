@@ -26,6 +26,8 @@ order_funds <- function(df, col = "Fund Name", before = NULL, after = NULL) {
     "Loan and Guarantee Enterprise",
     "Parking Enterprise", "Parking Management",
     "Federal", "State",
+    #ARPA
+    "American Rescue Plan Act",
     # should eventually remove "special"
     "Special", "Special Revenue", "Special Grant",
     # capital
