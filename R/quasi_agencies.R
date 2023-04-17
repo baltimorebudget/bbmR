@@ -13,8 +13,10 @@ assign_quasi_agency <- function(df) {
   df$`Program ID`[df$`Program ID` == "493" & df$`Activity ID` == 42] <- "493d"
   df$`Agency Name`[df$`Program ID` == "824"] <- "Baltimore Office of Promotion and the Arts"
   df$`Agency Name`[df$`Program ID` == "820"] <- "Visit Baltimore"
-  df$`Agency Name`[df$`Program ID` == "385"] <- "Legal Aid"
-  df$`Agency Name`[df$`Program ID` == "446"] <- "Family League"
+  df$`Agency Name`[df$`Program ID` == "385" & df$`Activity ID` %in% c(6,8)] <- "Legal Aid"
+  df$`Agency Name`[df$`Program ID` == "385" & df$`Activity ID` == 12] <- "Family League"
+  df$`Agency Name`[df$`Program ID` == "446" & df$`Activity ID` %in% c(4,20)] <- "BCCC"
+  df$`Agency Name`[df$`Program ID` == "446" & df$`Activity ID` %in% c(13,14,17)] <- "Family League"
   df$`Agency Name`[df$`Program ID` == "590" & df$`Activity ID` == 32] <- "Baltimore Heritage Area"
   df$`Program ID`[df$`Program ID` == "590" & df$`Activity ID` == 32] <- "590c"
   df$`Agency Name`[df$`Program ID` == "590" & df$`Activity ID` == 38] <- "Lexington Market"
@@ -28,57 +30,49 @@ assign_quasi_agency <- function(df) {
 make_quasi_ids <- function(df) {
 
   data <- df %>%
-    extract2("ID") %>%
-    unique()
+    group_by(`Agency Name`) %>%
+    mutate(IDs = paste(ID)) %>% select(IDs)
 
-  results = c()
-
-  for (x in data) {
-    if (grepl("446", x) | grepl("385", x) | grepl("824", x) | grepl("820", x)) {
-      x = str_trunc(x, width = 8, side = "right", ellipsis = "")
-    } else {
-      x = x
-    }
-    results = c(results, x)
-  }
-  results <- results %>% unique()
-  return(results)
+  return(data)
 }
 
-subset_quasi_data <- function(quasi_id) {
+make_quasi_names <- function(df) {
 
-  if (grepl("446", quasi_id) | grepl("385", quasi_id) | grepl("824", quasi_id) | grepl("820", quasi_id)) {
+  data <- df %>%
+    extract2("Agency Name") %>%
+    unique()
 
-    data <- list(
-      line.item = expend %>% mutate(`ID` = paste(`Agency ID`, `Program ID`)),
-      positions = pos %>% mutate(`ID` = paste(`Agency ID`, `Program ID`)),
-      all_pos = all_pos %>% mutate(`ID` = paste(`Agency ID`, `Program ID`)),
-      analyst = quasis %>% mutate(ID = str_trunc(ID, width = 8, side = "right", ellipsis = "")),
-      agency = quasis %>% mutate(ID = str_trunc(ID, width = 8, side = "right", ellipsis = ""))) %>%
-      map(filter, `ID` == quasi_id) %>%
-      map(ungroup)
+  return(data)
 
-    data$analyst %<>% extract2("Analyst") %>% unique()
-    data$agency %<>% extract2("Agency Name") %>% unique()
+}
 
-  } else {
-    data <- list(
-      line.item = expend %>% mutate(`ID` = paste(`Agency ID`, `Program ID`, `Activity ID`)),
-      positions = pos %>% mutate(`ID` = paste(`Agency ID`, `Program ID`, `Activity ID`)),
-      all_pos = all_pos %>% mutate(`ID` = paste(`Agency ID`, `Program ID`, `Activity ID`)),
-      analyst = quasis,
-      agency = quasis) %>%
-      map(filter, `ID` == quasi_id) %>%
-      map(ungroup)
+subset_quasi_data <- function(agency_name) {
 
-    data$analyst %<>% extract2("Analyst") %>% unique()
-    data$agency %<>% extract2("Agency Name") %>% unique()
-  }
+  agency = agency_name
+  id = quasi_ids$IDs[quasi_ids$`Agency Name` == agency]
+
+  data <- list(
+    line.item = expend %>% mutate(`ID` = paste(`Program ID`, `Activity ID`)),
+    positions = pos %>% mutate(`ID` = paste(`Program ID`, `Activity ID`)),
+    all_pos = all_pos %>% mutate(`ID` = paste(`Program ID`, `Activity ID`)),
+    analyst = quasis) %>%
+    map(filter, `ID` %in% id) %>%
+    map(ungroup)
+
+  data$analyst %<>% extract2("Analyst") %>% unique()
+  data$agency <- agency
 
   return(data)
 }
 
 make_quasi_files <- function(list) {
+  if(file.exists(paste0(getwd(), "/outputs/FY", params$fy, " ", toupper(params$phase), "/")) == FALSE) {
+    print("Creating folder.")
+
+    dir.create(paste0(getwd(), "/outputs/FY", params$fy, " ", toupper(params$phase), "/"), showWarnings = FALSE)
+
+  } else {print("Folder already created.")}
+
   for (n in names(list)) {
 
     agency_name <- list[[n]]$agency
