@@ -37,7 +37,7 @@ workday_get_values <- function() {
   #   mutate(`Grant / Project` = as.character(`Grant / Project`))
 
   #read in bpfs account xwalk
-  acct_26 <- query_db(paste0(bpfs_table), "ACCT_MAP_26_15") %>%
+  acct_26 <- query_db(paste0("planningyear24"), "ACCT_MAP_26_15") %>%
     collect() %>%
     mutate(PROGRAM_ID = as.numeric(PROGRAM_ID),
            ACTIVITY_ID = as.numeric(ACTIVITY_ID),
