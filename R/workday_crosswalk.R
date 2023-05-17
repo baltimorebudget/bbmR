@@ -164,7 +164,7 @@ exp_actuals_workday_xwalk <- function(actuals_file = "G:/Fiscal Years/Fiscal 202
     #keep columns for later joins
     keep = TRUE) %>%
     #make unique ids before columns are removed via joins and keep columns for later joins
-    unite(col = "Unique ID", c(`Agency ID`, `Program ID`, `Activity ID.x`, `Fund ID`,  `Object ID`, `Subobject ID`), sep = "-", remove = FALSE) %>%
+    unite(col = "Unique ID", c(`Agency ID`, `Program ID`, `Activity ID.x`, `Fund ID`,  `Object ID.x`, `Subobject ID`), sep = "-", remove = FALSE) %>%
     #filter out items not in original input
     # mutate(`Keep` = case_when(`Unique ID` %in% input_items ~ "Yes",
     #                           TRUE ~ "No"))

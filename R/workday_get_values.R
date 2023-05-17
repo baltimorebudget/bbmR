@@ -31,10 +31,10 @@ workday_get_values <- function() {
   x_ledger <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "Natural") %>%
     select(`Natural`, `Ledger Acct ID`, `Account Name`, `SC ID`, `Spend Cat`)
 
-  # x_sp <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "ProjectGrant")%>%
-  #   # filter(startsWith(`Payroll Grant ID`, "SP")) %>%
-  #   select(`Grant / Project`, `SpecialPurpose`, `Special Purpose Name`)%>%
-  #   mutate(`Grant / Project` = as.character(`Grant / Project`))
+  x_sp <- readxl::read_excel("Baltimore FDM Crosswalk.xlsx", sheet = "ProjectGrant")%>%
+    # filter(startsWith(`Payroll Grant ID`, "SP")) %>%
+    select(`Grant / Project`, `SpecialPurpose`, `Special Purpose Name`)%>%
+    mutate(`Grant / Project` = as.character(`Grant / Project`))
 
   #read in bpfs account xwalk
   acct_26 <- query_db(paste0("planningyear24"), "ACCT_MAP_26_15") %>%
@@ -53,6 +53,7 @@ workday_get_values <- function() {
                spend_cat = x_spend_cat,
                cc = x_cc,
                grant = x_grant,
+               sp = x_sp,
                ledger = x_ledger,
                acct_26 = acct_26)
 
