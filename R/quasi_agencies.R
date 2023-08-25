@@ -31,7 +31,7 @@ make_quasi_ids <- function(df) {
 
   data <- df %>%
     group_by(`Agency Name`) %>%
-    mutate(IDs = paste(ID)) %>% select(IDs)
+    mutate(IDs = paste(`Cost Center`)) %>% select(IDs)
 
   return(data)
 }
@@ -49,14 +49,16 @@ make_quasi_names <- function(df) {
 subset_quasi_data <- function(agency_name) {
 
   agency = agency_name
-  id = quasi_ids$IDs[quasi_ids$`Agency Name` == agency]
+  id = quasi_ids %>% filter(`Agency Name` == agency) %>% extract2("IDs")
 
   data <- list(
-    line.item = expend %>% mutate(`ID` = paste(`Program ID`, `Activity ID`)),
-    positions = pos %>% mutate(`ID` = paste(`Program ID`, `Activity ID`)),
-    all_pos = all_pos %>% mutate(`ID` = paste(`Program ID`, `Activity ID`)),
+    line.item = expend %>%
+                left_join(cc_xwalk, by = c("Program ID" = "Program_ID", "Activity ID" = "Activity_ID")) %>%
+                rename(`Cost Center ID` = `Cost_Center_ID`, `Cost Center Name` = `Cost_Center_Name`),
+    positions = pos,
+    # all_pos = all_pos %>% mutate(`ID` = paste(`Program ID`, `Activity ID`)),
     analyst = quasis) %>%
-    map(filter, `ID` %in% id) %>%
+    map(filter, `Cost Center ID` %in% id) %>%
     map(ungroup)
 
   data$analyst %<>% extract2("Analyst") %>% unique()
@@ -81,15 +83,15 @@ make_quasi_files <- function(list) {
 
     expend <- list[[n]]$line.item
     positions <- list[[n]]$positions
-    all_positions <- list[[n]]$all_pos
+    # all_positions <- list[[n]]$all_pos
 
     wb<- createWorkbook()
     addWorksheet(wb, "Line Items")
     addWorksheet(wb, "Positions")
-    addWorksheet(wb, "All Positions")
+    # addWorksheet(wb, "All Positions")
     writeDataTable(wb, 1, x = expend)
     writeDataTable(wb, 2, x = positions)
-    writeDataTable(wb, 3, x = all_positions)
+    # writeDataTable(wb, 3, x = all_positions)
 
     saveWorkbook(wb, file_path, overwrite = TRUE)
 
