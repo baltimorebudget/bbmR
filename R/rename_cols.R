@@ -14,18 +14,14 @@
 #' @export
 
 rename_upper_to_title <- function(df){
-  new_col = list()
-  for (n in names(df)) {
-    n = str_to_title(n)
+  col_names_original <- colnames(df)
+  col_names_title_case <- str_to_title(col_names_original)
+  col_names_title_case <- gsub(pattern = "Id", x = col_names_title_case, replacement = "ID")
+  col_names_title_case <- gsub(pattern = "Oso", x = col_names_title_case, replacement = "OSO")
+  col_names_title_case <- gsub(pattern = "Si ", x = col_names_title_case, replacement = "SI ")
+  colnames(df) <- col_names_title_case
 
-    if (grepl("Id", n) | grepl("Si ", n) | grepl("Oso ", n)) {
-      n = str_replace(n, "Id", "ID")
-      n = str_replace(n, "Si ", "SI ")
-      n = str_replace(n, "Oso ", "OSO ")} else {
-        n=n}
-    new_col = append(new_col, n)
-  }
-  return(new_col)
+  return(df)
 }
 
 #' Renames commonly inconsistent column names in BBMR data
